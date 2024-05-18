@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import COLORS from './data/colors.json';
@@ -8,10 +8,31 @@ const Cat = () => {
   const history = useHistory();
   const [colorIdx, setColorIdx] = useState(0);
   const [delayChange, setDelayChange] = useState(5000);
-  const [statusChange, setStatusChange] = useState('418');
+  const [statusChange, setStatusChange] = useState(localStorage.getItem('statusCode') ? localStorage.getItem('statusCode') : '418');
   const [delay, setDelay] = useState('');
   const [status, setStatus] = useState('');
 
+  useEffect(() => {
+    const colorInterval = setInterval(() => {
+      setColorIdx((prevIdx) => {
+        const newIdx = ++prevIdx % COLORS.length;
+        return newIdx;
+      });
+
+    }, delayChange);
+
+    return () => clearInterval(colorInterval);
+  }, [delayChange]);
+
+  useEffect(() => localStorage.setItem('statusCode', statusChange), [statusChange]);
+
+  useEffect(() => {
+    const resetTimeoutId = setTimeout(() => {
+      setStatusChange(prev => '418')
+    }, 1000 * 60 * 10);
+
+    return () => clearTimeout(resetTimeoutId);
+  }, [statusChange]);
 
   const handleDelaySubmit = (e) => {
     e.preventDefault();
